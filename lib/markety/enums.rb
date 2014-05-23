@@ -18,4 +18,9 @@ module Markety
     SFDCLEADOWNERID = "SFDCLEADOWNERID"
     SFDCOPPTYID     = "SFDCOPPTYID"
   end
+
+  module ReqCampSourceType
+    MKTOWS  = "MKTOWS"
+    SALES   = "SALES"
+  end
 end

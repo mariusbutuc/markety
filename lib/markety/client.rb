@@ -28,6 +28,68 @@ module Markety
       get_lead(LeadKey.new(LeadKeyType::EMAIL, email))
     end
 
+    # To be extracted out – Campaign#request()
+    def request_campaign(options = {})
+      source = get_campaign_source(options)
+
+      leads = get_leads(options)
+
+      identify_campaign(options)
+
+      if (tokens = options.delete(:program_tokens)) && !tokens.empty?
+        if !options[:program_name]
+          raise KeyError,
+            ':program_name must be provided when using :program_tokens'
+        end
+      end
+
+      response = send_request(:request_campaign, {
+        lead_list: leads,
+        source: source,
+        campaign_id: campaign_id,
+      })
+
+      response.to_hash[:success_request_campaign][:result][:success]
+    end
+
+    def get_campaign_source(options)
+      options.fetch(:source, ReqCampSourceType::MKTOWS)
+    end
+
+    def get_leads(options)
+      leads = options.fetch(:leads, {})
+
+      if leads.empty?
+        raise ArgumentError, ':leads must be provided'
+      end
+
+      if leads.count > 100
+        raise ArgumentError, 'the API supports maximum 100 :leads per call'
+      end
+
+      # pull out leads by their identifier
+
+      leads
+    end
+
+    def identify_campaign(options)
+      valid_id =  options.include?(:campaign_id) ||
+                  options.include?(:campaign_name) ||
+                  options.include?(:program_name)
+
+      unless valid_id
+        raise ArgumentError,
+          ':campaign_id, :campaign_name, or :program_name must be provided'
+      end
+
+      if options.include?(:campaign_id) && options.include?(:campaign_name)
+        raise ArgumentError,
+          ':campaign_id and :campaign_name are mutually exclusive'
+      end
+
+      # retrieve campaign
+    end
+
     def set_logger(logger)
       @logger = logger
     end
